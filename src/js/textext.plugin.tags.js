@@ -79,6 +79,34 @@
 		OPT_ITEMS = 'tags.items',
 
 		/**
+		 * This option allows to do something after tags add/del.
+		 *
+		 * For example:
+		 *
+		 *     $('textarea').textext({
+		 *         plugins: 'tags',
+		 *         tags: {
+		 *             change: function(evt, tag)
+		 *             {
+		 *                 if (evt == 'add') {
+		 *                     return '<b>  add ' + tag + '</b>';
+		 *                 } else {
+		 *                     return '<b>  del ' + tag + '</b>';
+		 *                 }
+		 *             }
+		 *         }
+		 *     })
+		 *
+		 * @name tags.change
+		 * @default null
+		 * @author isware
+		 * @date 2014/04/03
+		 * @id TextExtTags.options.tags.change
+		 * @version 1.1
+		 */
+		OPT_CHANGE = 'tags.change',
+
+		/**
 		 * HTML source that is used to generate a single tag.
 		 *
 		 * @name html.tag
@@ -160,7 +188,8 @@
 		DEFAULT_OPTS = {
 			tags : {
 				enabled : true,
-				items   : null
+				items   : null,
+				change  : null
 			},
 
 			html : {
@@ -590,6 +619,7 @@
 		var self      = this,
 			core      = self.core(),
 			container = self.containerElement(),
+			change = self.opts(OPT_CHANGE),
 			i, tag
 			;
 
@@ -597,8 +627,12 @@
 		{
 			tag = tags[i];
 
-			if(tag && self.isTagAllowed(tag))
+			if(tag && self.isTagAllowed(tag)) {
 				container.append(self.renderTag(tag));
+				if (change){
+					change.call(self, 'add', tag);
+				}
+			}
 		}
 
 		self.updateFormCache();
@@ -650,6 +684,7 @@
 	{
 		var self = this,
 			core = self.core(),
+			change = self.opts(OPT_CHANGE),
 			element
 			;
 
@@ -668,6 +703,9 @@
 		}
 
 		element.remove();
+		if (change) {
+			change.call(self, 'del', tag);
+		}
 		self.updateFormCache();
 		core.getFormData();
 		core.invalidateBounds();
