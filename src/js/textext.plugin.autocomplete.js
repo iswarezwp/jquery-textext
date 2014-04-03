@@ -520,6 +520,8 @@
 
 		if(self.isDropdownVisible())
 			self.selectFromDropdown();
+
+		self._suggestions = null;
 	};
 
 	/**
@@ -764,7 +766,7 @@
 			;
 
 		if(!suggestions)
-			return self.trigger(EVENT_GET_SUGGESTIONS);
+			return self.trigger(EVENT_GET_SUGGESTIONS, {query: ''});
 
 		if($.isFunction(renderCallback))
 		{
