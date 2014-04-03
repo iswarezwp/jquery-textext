@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>TextExt</title>
+    <link rel="stylesheet" type="text/css" href="css/textext.css">
+
+    <script src="js/jquery.min.js" type=""></script>
+    <script src="js/textext.min.js" type="text/javascript"></script>
+
+</head>
+<body>
+    <h1>Test</h1>
+
+    <textarea id="textarea" class="example" cols="100" rows="1"></textarea>
+
+    <pre id="output" class="output"></pre>
+
+    <button onclick="show_ulist()">show_list</button>
+
+    <script type="text/javascript">
+        function init_textarea_ajax () {
+            // prompt: 站位提示
+            // arrow：下拉框箭头
+            // autocomplete: 自动完成
+            // filter：自动过滤用户错误输入
+            // tags：x掉效果
+            // ajax：ajax方式自动加载数据
+            $("body").append('<br /><br /><br /><br /><b2>origin:</b2>')
+
+            $("body").append('<textarea id="textarea1" class="example" cols="100" rows="1"></textarea>')
+            $("#textarea1").textext({
+                plugins: 'prompt arrow autocomplete filter tags ajax',
+                prompt: '请输入邮箱',
+                ajax: {
+                    url: '/data1.json',
+                    dataType: 'json',
+                    cacheResults: true
+                },
+                autocomplete: {
+                    dropdownMaxHeight: '200px',
+                    render: function (suggestion) {
+                        return '<img src="/images/user.png" style="float: left; padding-right: 5px">' + suggestion;
+                    }
+                }
+            });
+        }
+
+        function init_textarea () {
+            shared_email_list = [];
+            $.get('/data.json', function(data) {
+                users = eval ("(" + data + ")");
+
+                $("#textarea").textext({
+                    // suggestions：如果要静态配置suggestions，就需要导入suggestions插件
+                    plugins: 'prompt arrow suggestions autocomplete filter tags',
+                    prompt: '请输入邮箱',
+                    suggestions: Object.keys(users),
+                    autocomplete: {
+                        dropdownMaxHeight: '200px',
+                        render: function (suggestion) {
+                            return '<img src="/images/user.png" style="float: left; padding-right: 5px">' + suggestion
+                            + ' - ' + users[suggestion];
+                        }
+                    },
+                    tags: {
+                        change: function (evt, tag) {
+                            if (evt == 'add') {
+                                for(var i in shared_email_list){
+                                    if(shared_email_list[i] == tag){
+                                        return;
+                                    }
+                                }
+                                shared_email_list.push(tag);
+                            } else {
+                                for(var i in shared_email_list){
+                                    if(shared_email_list[i] == tag){
+                                        shared_email_list.splice(i,1);
+                                        break;
+                                    }
+                                }
+                            };
+
+                            $("#output").text(shared_email_list.toString());
+                        }
+                    }
+                }).bind('isTagAllowed', function(e, data) {
+                	  // 自动过滤输入框中的重复项
+                    for(var i in shared_email_list){
+                        if(shared_email_list[i] == data.tag){
+                            data.result = false;
+                            return;
+                        }
+                    }
+                });
+            });
+        }
+
+        function show_ulist () {
+            // alert(shared_email_list.toString());
+            var textext = $("#textarea").textext()[0];
+            alert(textext.hiddenInput().val());
+        }
+
+        $(function () {
+            init_textarea();
+            init_textarea_ajax();
+        });
+    </script>
+
+</body>
+</html>
