@@ -597,7 +597,7 @@
 	 */
 	p.itemContains = function(item, needle)
 	{
-		return this.itemToString(item).toLowerCase().indexOf(needle.toLowerCase()) == 0;
+		return needle == '' || this.itemToString(item).toLowerCase().indexOf(needle.toLowerCase()) >= 0;
 	};
 
 	/**
